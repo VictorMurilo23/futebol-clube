@@ -4,6 +4,7 @@ import IMatchService from '../interfaces/IMatchService';
 import MatchService from '../services/MatchService';
 
 export default class MatchController {
+  private static unknownErrorMessage = 'Unknown Error';
   constructor(private matchService: IMatchService = new MatchService()) {}
 
   public async getAll(req: Request, res: Response) {
@@ -19,7 +20,7 @@ export default class MatchController {
       const matches = await this.matchService.getAll();
       return res.status(200).json(matches);
     } catch (e) {
-      return res.status(500).json({ message: 'Unknown Error' });
+      return res.status(500).json({ message: MatchController.unknownErrorMessage });
     }
   }
 
@@ -32,7 +33,21 @@ export default class MatchController {
         const { message, status } = errorMessageHandler(e.message);
         return res.status(status).json({ message });
       }
-      return res.status(500).json({ message: 'Unknown Error' });
+      return res.status(500).json({ message: MatchController.unknownErrorMessage });
+    }
+  }
+
+  public async finishMatch(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const message = await this.matchService.finishMatch(Number(id));
+      return res.status(200).json({ message });
+    } catch (e) {
+      if (e instanceof Error) {
+        const { message, status } = errorMessageHandler(e.message);
+        return res.status(status).json({ message });
+      }
+      return res.status(500).json({ message: MatchController.unknownErrorMessage });
     }
   }
 }

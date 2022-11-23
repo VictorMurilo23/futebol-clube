@@ -71,6 +71,12 @@ export default class MatchService implements IMatchService {
     return matches;
   }
 
+  private async getOne(matchId: number): Promise<MatchObj> {
+    const match = await this.matchModel.findOne({ where: { id: matchId } });
+    if (match === null) throw new Error('Match not found');
+    return match;
+  }
+
   public async create(reqBody: CreateTeamObj): Promise<MatchObj> {
     const { awayTeam, awayTeamGoals, homeTeam, homeTeamGoals } = MatchService
       .validateCreateReqBody(reqBody);
@@ -80,5 +86,11 @@ export default class MatchService implements IMatchService {
       { returning: true },
     );
     return match;
+  }
+
+  public async finishMatch(matchId: number): Promise<string> {
+    await this.getOne(matchId);
+    await this.matchModel.update({ inProgress: false }, { where: { id: matchId } });
+    return 'Finished';
   }
 }
