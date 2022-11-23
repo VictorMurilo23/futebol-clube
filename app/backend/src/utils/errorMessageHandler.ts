@@ -9,13 +9,13 @@ export default function errorMessageHandler(message: string): customErrorObj {
       return { status: 400, message };
     case 'Incorrect email or password':
       return { status: 401, message };
-    case 'Insert a token':
-      return { status: 401, message };
     case 'Token must be a valid token':
       return { status: 401, message };
     case 'Team not found':
       return { status: 404, message };
     case 'There is no team with such id!':
+      return { status: 404, message };
+    case 'Match not found':
       return { status: 404, message };
     case 'It is not possible to create a match with two equal teams':
       return { status: 422, message };

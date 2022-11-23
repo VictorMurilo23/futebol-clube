@@ -50,4 +50,18 @@ export default class MatchController {
       return res.status(500).json({ message: MatchController.unknownErrorMessage });
     }
   }
+
+  public async updateMatch(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const message = await this.matchService.updateMatch(Number(id), req.body);
+      return res.status(200).json({ message });
+    } catch (e) {
+      if (e instanceof Error) {
+        const { message, status } = errorMessageHandler(e.message);
+        return res.status(status).json({ message });
+      }
+      return res.status(500).json({ message: MatchController.unknownErrorMessage });
+    }
+  }
 }

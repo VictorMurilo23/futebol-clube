@@ -112,7 +112,7 @@ describe("Testes de integração userRoute", () => {
         .get("/login/validate");
 
       expect(chaiHttpResponse.status).to.be.equal(401);
-      expect(chaiHttpResponse.body).to.be.deep.equal({ message: "Insert a token" });
+      expect(chaiHttpResponse.body).to.be.deep.equal({ message: "Token must be a valid token" });
     });
 
     it("Verifica se ao não passar um token invalido é retornado um erro", async function () {
@@ -123,7 +123,7 @@ describe("Testes de integração userRoute", () => {
         .set({ Authorization: token });
 
       expect(chaiHttpResponse.status).to.be.equal(401);
-      expect(chaiHttpResponse.body).to.be.deep.equal({ message: "Expired or invalid token" });
+      expect(chaiHttpResponse.body).to.be.deep.equal({ message: "Token must be a valid token" });
     });
   });
 });

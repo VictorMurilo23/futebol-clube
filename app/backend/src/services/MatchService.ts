@@ -1,4 +1,5 @@
 import * as Joi from 'joi';
+import UpdateMatchObj from '../types/UpdateMatchObj';
 import ITeamService from '../interfaces/ITeamService';
 import CreateTeamObj from '../types/CreateTeamObj';
 import IMatchService from '../interfaces/IMatchService';
@@ -84,6 +85,20 @@ export default class MatchService implements IMatchService {
     return match;
   }
 
+  private static validateUpdateGoalsReqBody(reqBody: UpdateMatchObj): UpdateMatchObj {
+    const schema = Joi.object({
+      homeTeamGoals: Joi.number().min(0).required(),
+      awayTeamGoals: Joi.number().min(0).required(),
+    });
+
+    const { error, value } = schema.validate(reqBody);
+    if (error) {
+      throw new Error('All fields must be filled');
+    }
+
+    return value;
+  }
+
   public async create(reqBody: CreateTeamObj): Promise<MatchObj> {
     const { awayTeam, awayTeamGoals, homeTeam, homeTeamGoals } = MatchService
       .validateCreateReqBody(reqBody);
@@ -99,5 +114,12 @@ export default class MatchService implements IMatchService {
     await this.getOne(matchId);
     await this.matchModel.update({ inProgress: false }, { where: { id: matchId } });
     return 'Finished';
+  }
+
+  public async updateMatch(matchId: number, teamsGoals: UpdateMatchObj): Promise<string> {
+    await this.getOne(matchId);
+    const { awayTeamGoals, homeTeamGoals } = MatchService.validateUpdateGoalsReqBody(teamsGoals);
+    await this.matchModel.update({ awayTeamGoals, homeTeamGoals }, { where: { id: matchId } });
+    return 'Updated';
   }
 }
