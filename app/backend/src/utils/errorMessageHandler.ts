@@ -11,6 +11,8 @@ export default function errorMessageHandler(message: string): customErrorObj {
       return { status: 401, message };
     case 'Insert a token':
       return { status: 401, message };
+    case 'Expired or invalid token':
+      return { status: 401, message };
     default:
       return { status: 500, message: 'Erro não catalogado' };
   }
