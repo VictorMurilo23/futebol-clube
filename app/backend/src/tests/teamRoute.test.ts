@@ -28,4 +28,24 @@ describe("Testes de integração teamRoute", () => {
     });
   });
 
+  describe("Testes da rota /teams:id", function () {
+    afterEach(sinon.restore);
+    it("Verifica se ao passar um id que existe é retornado as informações do time", async function () {
+      sinon.stub(TeamModel, "findOne").resolves({ ...teamsMock[0] } as TeamModel);
+
+      chaiHttpResponse = await chai.request(app).get("/teams/1");
+
+      expect(chaiHttpResponse.status).to.be.equal(200);
+      expect(chaiHttpResponse.body).to.be.deep.equal(teamsMock[0]);
+    });
+    it("Verifica se ao passar um id que não existe é retornado um erro", async function () {
+      sinon.stub(TeamModel, "findOne").resolves(null);
+
+      chaiHttpResponse = await chai.request(app).get("/teams/12121628168");
+
+      expect(chaiHttpResponse.status).to.be.equal(404);
+      expect(chaiHttpResponse.body).to.be.deep.equal({ message: 'Team not found' });
+    });
+
+  });
 });
