@@ -15,6 +15,8 @@ export default function errorMessageHandler(message: string): customErrorObj {
       return { status: 401, message };
     case 'Team not found':
       return { status: 404, message };
+    case 'It is not possible to create a match with two equal teams':
+      return { status: 422, message };
     default:
       return { status: 500, message: 'Erro não catalogado' };
   }

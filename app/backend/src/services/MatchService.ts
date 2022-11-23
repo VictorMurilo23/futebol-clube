@@ -41,6 +41,10 @@ export default class MatchService implements IMatchService {
   }
 
   private async validateTeamsIds(homeTeam: number, awayTeam: number): Promise<void> {
+    if (homeTeam === awayTeam) {
+      throw new Error('It is not possible to create a match with two equal teams');
+    }
+
     await this.teamService.getOne(homeTeam);
     await this.teamService.getOne(awayTeam);
   }
