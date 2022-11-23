@@ -44,9 +44,12 @@ export default class MatchService implements IMatchService {
     if (homeTeam === awayTeam) {
       throw new Error('It is not possible to create a match with two equal teams');
     }
-
-    await this.teamService.getOne(homeTeam);
-    await this.teamService.getOne(awayTeam);
+    try {
+      await this.teamService.getOne(homeTeam);
+      await this.teamService.getOne(awayTeam);
+    } catch (e) {
+      throw new Error('There is no team with such id!');
+    }
   }
 
   private static validateCreateReqBody(reqBody: CreateTeamObj): CreateTeamObj {
