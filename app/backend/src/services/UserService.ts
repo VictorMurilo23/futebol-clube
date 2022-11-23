@@ -1,7 +1,6 @@
 import { compare } from 'bcryptjs';
 import * as Joi from 'joi';
-import TokenInfo from '../types/TokenInfo';
-import { createToken, validateToken } from '../utils/token';
+import { createToken } from '../utils/token';
 import UserInfo from '../types/UserInfo';
 import UserModel from '../database/models/UserModel';
 import UserLoginBody from '../types/UserLoginBody';
@@ -44,10 +43,10 @@ export default class UserService implements IUserService {
     return token;
   }
 
-  public async validate(token: string): Promise<{ role: string; }> {
-    const tokenInfo = validateToken(token);
+  public async validate(email: string): Promise<{ role: string; }> {
+    // const tokenInfo = validateToken(email);
     const dbInfo: UserInfo | null = await this.userModel
-      .findOne({ where: { email: (<TokenInfo>tokenInfo).data.email } });
+      .findOne({ where: { email } });
     if (dbInfo === null) {
       throw new Error('Incorrect email or password');
     }

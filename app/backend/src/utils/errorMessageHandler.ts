@@ -11,7 +11,7 @@ export default function errorMessageHandler(message: string): customErrorObj {
       return { status: 401, message };
     case 'Insert a token':
       return { status: 401, message };
-    case 'Expired or invalid token':
+    case 'Token must be a valid token':
       return { status: 401, message };
     case 'Team not found':
       return { status: 404, message };

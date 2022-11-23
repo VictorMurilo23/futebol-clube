@@ -21,10 +21,9 @@ export default class UserController {
 
   public async validate(req: Request, res: Response) {
     try {
-      const token = req.headers.authorization;
-      if (!token) throw new Error('Insert a token');
-
-      const { role } = await this.userService.validate(token);
+      const email = req.headers.from;
+      if (!email) throw new Error('Como esse erro aconteceu?');
+      const { role } = await this.userService.validate(email);
       return res.status(200).json({ role });
     } catch (e: unknown) {
       if (e instanceof Error) {
