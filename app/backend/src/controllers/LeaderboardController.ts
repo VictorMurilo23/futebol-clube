@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
+import ILeaderboardService from '../interfaces/ILeaderboardService';
 import LeaderboardService from '../services/LeaderboardService';
 
 export default class LeaderboardController {
   private static unknownErrorMessage = 'Unknown Error';
-  constructor(private leaderboardService = new LeaderboardService()) {}
+  constructor(private leaderboardService: ILeaderboardService = new LeaderboardService()) {}
 
   public async getHomeLeaderboard(_req: Request, res: Response) {
     try {

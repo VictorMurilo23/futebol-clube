@@ -1,11 +1,11 @@
 import TeamGoal from '../types/TeamGoal';
 import IMatchService from '../interfaces/IMatchService';
-import MatchModel from '../database/models/MatchModel';
 import MatchService from './MatchService';
 import MatchObj from '../types/MatchObj';
 import LeaderboardInfo from '../types/LeaderboardInfo';
+import ILeaderboardService from '../interfaces/ILeaderboardService';
 
-export default class LeaderboardService {
+export default class LeaderboardService implements ILeaderboardService {
   private static teamLeaderboardInfo: LeaderboardInfo = {
     name: '',
     totalPoints: 0,
@@ -19,10 +19,7 @@ export default class LeaderboardService {
     efficiency: 0,
   };
 
-  private matchService: IMatchService;
-  constructor(private matchModel = MatchModel) {
-    this.matchService = new MatchService();
-  }
+  constructor(private matchService: IMatchService = new MatchService()) {}
 
   private static changeTeamInfo(teamMatches: MatchObj[], team1: TeamGoal, team2: TeamGoal) {
     const teamInfo = { ...LeaderboardService.teamLeaderboardInfo };
@@ -119,9 +116,7 @@ export default class LeaderboardService {
       .sort((a, b) => a.name.localeCompare(b.name));
     const sortedAway = (await this.getAwayLeaderboard())
       .sort((a, b) => a.name.localeCompare(b.name));
-
     const leaderboard = LeaderboardService.getTotalLeaderboard(sortedHome, sortedAway);
-    console.log(leaderboard);
     const sortedLeaderboard = LeaderboardService.sortLeaderboard(leaderboard);
     return sortedLeaderboard;
   }
