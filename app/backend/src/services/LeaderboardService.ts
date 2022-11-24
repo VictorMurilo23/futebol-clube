@@ -81,8 +81,13 @@ export default class LeaderboardService {
     const matches = await this.matchService.getAll();
     const notInProgressMatches = matches.filter((element) => element.inProgress === false);
     const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamHome');
+    return leaderboard;
+  }
 
-    console.log(leaderboard);
+  public async getAwayLeaderboard(): Promise<LeaderboardTeamInfo[]> {
+    const matches = await this.matchService.getAll();
+    const notInProgressMatches = matches.filter((element) => element.inProgress === false);
+    const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamAway');
     return leaderboard;
   }
 }

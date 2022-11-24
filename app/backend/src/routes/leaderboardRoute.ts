@@ -7,4 +7,6 @@ const leaderboardRoute = express.Router();
 
 leaderboardRoute.get('/home', (req, res) => leaderboardController.getHomeLeaderboard(req, res));
 
+leaderboardRoute.get('/away', (req, res) => leaderboardController.getAwayLeaderboard(req, res));
+
 export default leaderboardRoute;
