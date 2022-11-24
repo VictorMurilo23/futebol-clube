@@ -22,4 +22,13 @@ export default class LeaderboardController {
       return res.status(500).json({ message: LeaderboardController.unknownErrorMessage });
     }
   }
+
+  public async getLeaderboard(_req: Request, res: Response) {
+    try {
+      const leaderboard = await this.leaderboardService.getLeaderboard();
+      return res.status(200).json(leaderboard);
+    } catch (e) {
+      return res.status(500).json({ message: LeaderboardController.unknownErrorMessage });
+    }
+  }
 }

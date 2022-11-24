@@ -1,4 +1,4 @@
-type LeaderboardTeamInfo = {
+type LeaderboardInfo = {
   name: string,
   totalPoints: number,
   totalGames: number,
@@ -11,4 +11,4 @@ type LeaderboardTeamInfo = {
   efficiency: number,
 };
 
-export default LeaderboardTeamInfo;
+export default LeaderboardInfo;

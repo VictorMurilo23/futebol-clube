@@ -3,10 +3,10 @@ import IMatchService from '../interfaces/IMatchService';
 import MatchModel from '../database/models/MatchModel';
 import MatchService from './MatchService';
 import MatchObj from '../types/MatchObj';
-import LeaderboardTeamInfo from '../types/LeaderboardTeamInfo';
+import LeaderboardInfo from '../types/LeaderboardInfo';
 
 export default class LeaderboardService {
-  private static teamLeaderboardInfo: LeaderboardTeamInfo = {
+  private static teamLeaderboardInfo: LeaderboardInfo = {
     name: '',
     totalPoints: 0,
     totalGames: 0,
@@ -67,27 +67,62 @@ export default class LeaderboardService {
       teamsLeaderboard.push(teamInfo);
     }
 
-    const sortedLeaderboar = teamsLeaderboard
-      .sort((a, b) => b.totalPoints - a.totalPoints
-      || b.totalVictories - a.totalVictories
-      || b.goalsBalance - a.goalsBalance
-      || b.goalsFavor - a.goalsFavor
-      || b.goalsOwn - a.goalsFavor);
-
+    const sortedLeaderboar = LeaderboardService.sortLeaderboard(teamsLeaderboard);
     return sortedLeaderboar;
   }
 
-  public async getHomeLeaderboard(): Promise<LeaderboardTeamInfo[]> {
+  public async getHomeLeaderboard(): Promise<LeaderboardInfo[]> {
     const matches = await this.matchService.getAll();
     const notInProgressMatches = matches.filter((element) => element.inProgress === false);
     const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamHome');
     return leaderboard;
   }
 
-  public async getAwayLeaderboard(): Promise<LeaderboardTeamInfo[]> {
+  public async getAwayLeaderboard(): Promise<LeaderboardInfo[]> {
     const matches = await this.matchService.getAll();
     const notInProgressMatches = matches.filter((element) => element.inProgress === false);
     const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamAway');
     return leaderboard;
+  }
+
+  private static sortLeaderboard(leaderboard: LeaderboardInfo[]): LeaderboardInfo[] {
+    const sorted = leaderboard.sort((a, b) => b.totalPoints - a.totalPoints
+    || b.totalVictories - a.totalVictories
+    || b.goalsBalance - a.goalsBalance
+    || b.goalsFavor - a.goalsFavor
+    || b.goalsOwn - a.goalsFavor);
+    return sorted;
+  }
+
+  private static getTotalLeaderboard(home: LeaderboardInfo[], away: LeaderboardInfo[]) {
+    const leaderboard = [];
+    for (let index = 0; index < home.length; index += 1) {
+      const teamInfo = { ...LeaderboardService.teamLeaderboardInfo };
+      teamInfo.name = away[index].name;
+      teamInfo.totalPoints = away[index].totalPoints + home[index].totalPoints;
+      teamInfo.totalGames = away[index].totalGames + home[index].totalGames;
+      teamInfo.totalVictories = away[index].totalVictories + home[index].totalVictories;
+      teamInfo.totalDraws = away[index].totalDraws + home[index].totalDraws;
+      teamInfo.totalLosses = away[index].totalLosses + home[index].totalLosses;
+      teamInfo.goalsFavor = away[index].goalsFavor + home[index].goalsFavor;
+      teamInfo.goalsOwn = away[index].goalsOwn + home[index].goalsOwn;
+      teamInfo.goalsBalance = teamInfo.goalsFavor - teamInfo.goalsOwn;
+      teamInfo.efficiency = Number(((teamInfo.totalPoints / (teamInfo.totalGames * 3)) * 100)
+        .toFixed(2));
+      leaderboard.push(teamInfo);
+    }
+    return leaderboard;
+  }
+
+  public async getLeaderboard(): Promise<LeaderboardInfo[]> {
+    const sortedHome = (await this.getHomeLeaderboard())
+      .sort((a, b) => a.name.localeCompare(b.name));
+    const sortedAway = (await this.getAwayLeaderboard())
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    const leaderboard = LeaderboardService.getTotalLeaderboard(sortedHome, sortedAway);
+    console.log(leaderboard);
+    const sortedLeaderboard = LeaderboardService.sortLeaderboard(leaderboard);
+    return sortedLeaderboard;
   }
 }
