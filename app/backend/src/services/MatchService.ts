@@ -117,8 +117,8 @@ export default class MatchService implements IMatchService {
   }
 
   public async updateMatch(matchId: number, teamsGoals: UpdateMatchObj): Promise<string> {
-    await this.getOne(matchId);
     const { awayTeamGoals, homeTeamGoals } = MatchService.validateUpdateGoalsReqBody(teamsGoals);
+    await this.getOne(matchId);
     await this.matchModel.update({ awayTeamGoals, homeTeamGoals }, { where: { id: matchId } });
     return 'Updated';
   }
