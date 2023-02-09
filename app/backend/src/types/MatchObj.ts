@@ -5,10 +5,10 @@ type MatchObj = {
   awayTeam: number,
   awayTeamGoals: number,
   inProgress: boolean,
-  teamHome?: {
+  teamHome: {
     teamName: string
   },
-  teamAway?: {
+  teamAway: {
     teamName:string
   }
 };

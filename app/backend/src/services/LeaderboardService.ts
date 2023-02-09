@@ -21,7 +21,7 @@ export default class LeaderboardService implements ILeaderboardService {
 
   constructor(private matchService: IMatchService = new MatchService()) {}
 
-  private static changeTeamInfo(teamMatches: MatchObj[], team1: TeamGoal, team2: TeamGoal) {
+  private static calculateTeamPoints(teamMatches: MatchObj[], team1: TeamGoal, team2: TeamGoal) {
     const teamInfo = { ...LeaderboardService.teamLeaderboardInfo };
     teamMatches.forEach((element: MatchObj) => {
       if (element[team1] > element[team2]) {
@@ -40,46 +40,32 @@ export default class LeaderboardService implements ILeaderboardService {
   }
 
   private static calculateTeamScore(teamMatches: MatchObj[], teamType: 'teamHome' | 'teamAway') {
-    const currentTeamGoal = teamType === 'teamHome' ? 'homeTeamGoals' : 'awayTeamGoals';
-    const opponentTeamGoal = teamType === 'teamHome' ? 'awayTeamGoals' : 'homeTeamGoals';
+    const currentTeamGoals = teamType === 'teamHome' ? 'homeTeamGoals' : 'awayTeamGoals';
+    const opponentTeamGoals = teamType === 'teamHome' ? 'awayTeamGoals' : 'homeTeamGoals';
     const teamInfo = LeaderboardService
-      .changeTeamInfo(teamMatches, currentTeamGoal, opponentTeamGoal);
+      .calculateTeamPoints(teamMatches, currentTeamGoals, opponentTeamGoals);
     teamInfo.totalGames = teamMatches.length;
     teamInfo.goalsBalance = teamInfo.goalsFavor - teamInfo.goalsOwn;
     teamInfo.efficiency = Number(((teamInfo.totalPoints / (teamInfo.totalGames * 3)) * 100)
       .toFixed(2));
-    teamInfo.name = teamMatches[0][teamType]?.teamName || '';
+    teamInfo.name = teamMatches[0][teamType].teamName || '';
     return teamInfo;
   }
 
   private static getLeaderboard(matches: MatchObj[], teamType: 'teamHome' | 'teamAway') {
-    const homeTeams = matches.map((element) => element[teamType]?.teamName);
-    const teamNamesWithoutRepeat = [...new Set(homeTeams)];
-    const teamsLeaderboard = [];
+    const teamNames = matches.map((element) => element[teamType]?.teamName);
+    const teamNamesWithoutRepeat = [...new Set(teamNames)];
+    const leaderboard = [];
 
     for (let index = 0; index < teamNamesWithoutRepeat.length; index += 1) {
-      const teamMatches = matches
-        .filter((element) => element[teamType]?.teamName === teamNamesWithoutRepeat[index]);
-      const teamInfo = LeaderboardService.calculateTeamScore(teamMatches, teamType);
-      teamsLeaderboard.push(teamInfo);
+      const teamMatchesArray = matches
+        .filter((element) => element[teamType].teamName === teamNamesWithoutRepeat[index]);
+      const teamInfo = LeaderboardService.calculateTeamScore(teamMatchesArray, teamType);
+      leaderboard.push(teamInfo);
     }
 
-    const sortedLeaderboar = LeaderboardService.sortLeaderboard(teamsLeaderboard);
+    const sortedLeaderboar = LeaderboardService.sortLeaderboard(leaderboard);
     return sortedLeaderboar;
-  }
-
-  public async getHomeLeaderboard(): Promise<LeaderboardInfo[]> {
-    const matches = await this.matchService.getAll();
-    const notInProgressMatches = matches.filter((element) => element.inProgress === false);
-    const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamHome');
-    return leaderboard;
-  }
-
-  public async getAwayLeaderboard(): Promise<LeaderboardInfo[]> {
-    const matches = await this.matchService.getAll();
-    const notInProgressMatches = matches.filter((element) => element.inProgress === false);
-    const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamAway');
-    return leaderboard;
   }
 
   private static sortLeaderboard(leaderboard: LeaderboardInfo[]): LeaderboardInfo[] {
@@ -108,6 +94,20 @@ export default class LeaderboardService implements ILeaderboardService {
         .toFixed(2));
       leaderboard.push(teamInfo);
     }
+    return leaderboard;
+  }
+
+  public async getHomeLeaderboard(): Promise<LeaderboardInfo[]> {
+    const matches = await this.matchService.getAll();
+    const notInProgressMatches = matches.filter((element) => element.inProgress === false);
+    const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamHome');
+    return leaderboard;
+  }
+
+  public async getAwayLeaderboard(): Promise<LeaderboardInfo[]> {
+    const matches = await this.matchService.getAll();
+    const notInProgressMatches = matches.filter((element) => element.inProgress === false);
+    const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamAway');
     return leaderboard;
   }
 

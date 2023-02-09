@@ -15,21 +15,24 @@ export default class UserController {
         const { message, status } = errorMessageHandler(e.message);
         return res.status(status).json({ message });
       }
+
       return res.status(500).json({ message: 'Unknown Error' });
     }
   }
 
-  public async validate(req: Request, res: Response) {
+  public async validateRole(req: Request, res: Response) {
     try {
       const email = req.headers.from;
-      if (!email) throw new Error('Como esse erro aconteceu?');
-      const { role } = await this.userService.validate(email);
+      if (!email) throw new Error('Bad Request!');
+
+      const { role } = await this.userService.validateRole(email);
       return res.status(200).json({ role });
     } catch (e: unknown) {
       if (e instanceof Error) {
         const { message, status } = errorMessageHandler(e.message);
         return res.status(status).json({ message });
       }
+
       return res.status(500).json({ message: 'Unknown Error' });
     }
   }

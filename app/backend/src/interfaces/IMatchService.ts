@@ -4,7 +4,7 @@ import MatchObj from '../types/MatchObj';
 
 export default interface IMatchService {
   getAll(inProgressBoolean?: boolean): Promise<MatchObj[]>;
-  create(obj: CreateTeamObj): Promise<MatchObj>;
+  createMatch(obj: CreateTeamObj): Promise<MatchObj>;
   finishMatch(matchId: number): Promise<string>;
   updateMatch(matchId: number, teamsGoals: UpdateMatchObj): Promise<string>;
 }

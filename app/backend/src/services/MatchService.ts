@@ -14,7 +14,23 @@ export default class MatchService implements IMatchService {
     this.teamService = new TeamService();
   }
 
-  private async filteredGetAll(boolean: boolean): Promise<MatchObj[]> {
+  private static validateCreateReqBody(reqBody: CreateTeamObj): CreateTeamObj {
+    const schema = Joi.object({
+      homeTeam: Joi.number().min(0).required(),
+      awayTeam: Joi.number().min(0).required(),
+      homeTeamGoals: Joi.number().min(0).required(),
+      awayTeamGoals: Joi.number().min(0).required(),
+    });
+
+    const { error, value } = schema.validate(reqBody);
+    if (error) {
+      throw new Error('All fields must be filled');
+    }
+
+    return value;
+  }
+
+  private async getMatchesByInProgressStatus(boolean: boolean): Promise<MatchObj[]> {
     const matches = await this.matchModel.findAll({
       where: {
         inProgress: boolean,
@@ -29,7 +45,7 @@ export default class MatchService implements IMatchService {
     return matches;
   }
 
-  private async normalGetAll(): Promise<MatchObj[]> {
+  private async getAllMatches(): Promise<MatchObj[]> {
     const matches = await this.matchModel.findAll({
       include: {
         all: true,
@@ -53,33 +69,7 @@ export default class MatchService implements IMatchService {
     }
   }
 
-  private static validateCreateReqBody(reqBody: CreateTeamObj): CreateTeamObj {
-    const schema = Joi.object({
-      homeTeam: Joi.number().min(0).required(),
-      awayTeam: Joi.number().min(0).required(),
-      homeTeamGoals: Joi.number().min(0).required(),
-      awayTeamGoals: Joi.number().min(0).required(),
-    });
-
-    const { error, value } = schema.validate(reqBody);
-    if (error) {
-      throw new Error('All fields must be filled');
-    }
-
-    return value;
-  }
-
-  public async getAll(inProgressBoolean?: boolean): Promise<MatchObj[]> {
-    let matches: MatchObj[];
-    if (inProgressBoolean === undefined) {
-      matches = await this.normalGetAll();
-      return matches;
-    }
-    matches = await this.filteredGetAll(inProgressBoolean);
-    return matches;
-  }
-
-  private async getOne(matchId: number): Promise<MatchObj> {
+  private async getMatcheById(matchId: number): Promise<MatchObj> {
     const match = await this.matchModel.findOne({ where: { id: matchId } });
     if (match === null) throw new Error('Match not found');
     return match;
@@ -99,7 +89,17 @@ export default class MatchService implements IMatchService {
     return value;
   }
 
-  public async create(reqBody: CreateTeamObj): Promise<MatchObj> {
+  public async getAll(inProgressBoolean?: boolean): Promise<MatchObj[]> {
+    let matches: MatchObj[];
+    if (inProgressBoolean === undefined) {
+      matches = await this.getAllMatches();
+      return matches;
+    }
+    matches = await this.getMatchesByInProgressStatus(inProgressBoolean);
+    return matches;
+  }
+
+  public async createMatch(reqBody: CreateTeamObj): Promise<MatchObj> {
     const { awayTeam, awayTeamGoals, homeTeam, homeTeamGoals } = MatchService
       .validateCreateReqBody(reqBody);
     await this.validateTeamsIds(homeTeam, awayTeam);
@@ -111,14 +111,14 @@ export default class MatchService implements IMatchService {
   }
 
   public async finishMatch(matchId: number): Promise<string> {
-    await this.getOne(matchId);
+    await this.getMatcheById(matchId);
     await this.matchModel.update({ inProgress: false }, { where: { id: matchId } });
     return 'Finished';
   }
 
   public async updateMatch(matchId: number, teamsGoals: UpdateMatchObj): Promise<string> {
     const { awayTeamGoals, homeTeamGoals } = MatchService.validateUpdateGoalsReqBody(teamsGoals);
-    await this.getOne(matchId);
+    await this.getMatcheById(matchId);
     await this.matchModel.update({ awayTeamGoals, homeTeamGoals }, { where: { id: matchId } });
     return 'Updated';
   }

@@ -6,5 +6,5 @@ type roleObj = {
 
 export default interface IUserService {
   login(reqBody: UserLoginBody): Promise<string>,
-  validate(token: string): Promise<roleObj>
+  validateRole(token: string): Promise<roleObj>
 }

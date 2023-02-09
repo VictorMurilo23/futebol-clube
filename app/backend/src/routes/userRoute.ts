@@ -11,7 +11,7 @@ userRouter.post('/', (req, res) => userController.login(req, res));
 userRouter.get(
   '/validate',
   tokenValidationMiddleware,
-  (req, res) => userController.validate(req, res),
+  (req, res) => userController.validateRole(req, res),
 );
 
 export default userRouter;

@@ -7,6 +7,7 @@ import UserLoginBody from '../types/UserLoginBody';
 import IUserService from '../interfaces/IUserService';
 
 export default class UserService implements IUserService {
+  static incorrectEmailOrPasswordMessage = 'Incorrect email or password';
   constructor(private userModel = UserModel) {}
 
   private static validateReqBody(reqBody: UserLoginBody): UserLoginBody {
@@ -23,32 +24,43 @@ export default class UserService implements IUserService {
     return value;
   }
 
-  private static async validateLogin(dbInfo: UserInfo | null, reqBodyInfo: UserLoginBody) {
-    if (dbInfo === null || await compare(reqBodyInfo.password, dbInfo.password) === false) {
-      throw new Error('Incorrect email or password');
+  private static async validatePassword(
+    dbUserInfo: UserInfo,
+    reqBodyInfo: UserLoginBody,
+  ) {
+    const comparePasswords = await compare(
+      reqBodyInfo.password,
+      dbUserInfo.password,
+    );
+    if (comparePasswords === false) {
+      throw new Error(UserService.incorrectEmailOrPasswordMessage);
     }
-
-    const { email, username, role } = dbInfo;
-    return { email, username, role, password: '_' };
+    return { ...dbUserInfo, password: '_' };
   }
 
   public async login(reqBody: UserLoginBody): Promise<string> {
-    const validUserInfo = UserService.validateReqBody(reqBody);
-    const dbInfo: UserInfo | null = await this.userModel
-      .findOne({ where: { email: validUserInfo.email }, attributes: { exclude: ['id'] },
-      });
+    const validReqBody = UserService.validateReqBody(reqBody);
+    const dbUserInfo: UserInfo | null = await this.userModel.findOne({
+      where: { email: validReqBody.email },
+      attributes: { exclude: ['id'] },
+    });
 
-    const userInfo: UserInfo = await UserService.validateLogin(dbInfo, validUserInfo);
+    if (dbUserInfo === null) { throw new Error(UserService.incorrectEmailOrPasswordMessage); }
+
+    const userInfo: UserInfo = await UserService.validatePassword(
+      dbUserInfo,
+      validReqBody,
+    );
     const token = createToken(userInfo);
     return token;
   }
 
-  public async validate(email: string): Promise<{ role: string; }> {
-    // const tokenInfo = validateToken(email);
-    const dbInfo: UserInfo | null = await this.userModel
-      .findOne({ where: { email } });
+  public async validateRole(email: string): Promise<{ role: string }> {
+    const dbInfo: UserInfo | null = await this.userModel.findOne({
+      where: { email },
+    });
     if (dbInfo === null) {
-      throw new Error('Incorrect email or password');
+      throw new Error(UserService.incorrectEmailOrPasswordMessage);
     }
     return { role: dbInfo.role };
   }
