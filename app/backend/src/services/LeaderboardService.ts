@@ -98,15 +98,13 @@ export default class LeaderboardService implements ILeaderboardService {
   }
 
   public async getHomeLeaderboard(): Promise<LeaderboardInfo[]> {
-    const matches = await this.matchService.getAll();
-    const notInProgressMatches = matches.filter((element) => element.inProgress === false);
+    const notInProgressMatches = await this.matchService.getAll(false);
     const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamHome');
     return leaderboard;
   }
 
   public async getAwayLeaderboard(): Promise<LeaderboardInfo[]> {
-    const matches = await this.matchService.getAll();
-    const notInProgressMatches = matches.filter((element) => element.inProgress === false);
+    const notInProgressMatches = await this.matchService.getAll(false);
     const leaderboard = LeaderboardService.getLeaderboard(notInProgressMatches, 'teamAway');
     return leaderboard;
   }

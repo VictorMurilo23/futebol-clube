@@ -14,6 +14,20 @@ export default class MatchService implements IMatchService {
     this.teamService = new TeamService();
   }
 
+  private static validateUpdateGoalsReqBody(reqBody: UpdateMatchObj): UpdateMatchObj {
+    const schema = Joi.object({
+      homeTeamGoals: Joi.number().min(0).required(),
+      awayTeamGoals: Joi.number().min(0).required(),
+    });
+
+    const { error, value } = schema.validate(reqBody);
+    if (error) {
+      throw new Error('All fields must be filled');
+    }
+
+    return value;
+  }
+
   private static validateCreateReqBody(reqBody: CreateTeamObj): CreateTeamObj {
     const schema = Joi.object({
       homeTeam: Joi.number().min(0).required(),
@@ -73,20 +87,6 @@ export default class MatchService implements IMatchService {
     const match = await this.matchModel.findOne({ where: { id: matchId } });
     if (match === null) throw new Error('Match not found');
     return match;
-  }
-
-  private static validateUpdateGoalsReqBody(reqBody: UpdateMatchObj): UpdateMatchObj {
-    const schema = Joi.object({
-      homeTeamGoals: Joi.number().min(0).required(),
-      awayTeamGoals: Joi.number().min(0).required(),
-    });
-
-    const { error, value } = schema.validate(reqBody);
-    if (error) {
-      throw new Error('All fields must be filled');
-    }
-
-    return value;
   }
 
   public async getAll(inProgressBoolean?: boolean): Promise<MatchObj[]> {
